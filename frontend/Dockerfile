@@ -1,17 +1,18 @@
-FROM node:20
-
+# Build stage
+FROM node:20 AS builder
 WORKDIR /app
-
 COPY package*.json ./
 RUN npm install
-
 COPY . .
-
 RUN npm run build
 
-# Servir frontend com serve
-RUN npm install -g serve
-
-EXPOSE 8080
-
-CMD ["serve", "-s", "build", "-l", "8080"]
+# Production stage
+FROM node:20
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --production
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.js ./next.config.js
+EXPOSE 3000
+CMD ["npm", "start"]
