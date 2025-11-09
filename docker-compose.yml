@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_petcare
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: petcare
+      MYSQL_USER: petuser
+      MYSQL_PASSWORD: petpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    container_name: backend_petcare
+    restart: always
+    env_file: ./backend/.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    container_name: frontend_petcare
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
